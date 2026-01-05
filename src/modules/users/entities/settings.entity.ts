@@ -1,5 +1,5 @@
-import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn } from 'typeorm';
-import { Child } from './child.entity';
+import { Entity, PrimaryGeneratedColumn, Column, OneToOne, JoinColumn, ManyToOne } from 'typeorm';
+import { User } from './user.entity';
 
 @Entity('settings')
 export class Settings {
@@ -15,10 +15,11 @@ export class Settings {
   @Column({ default: false })
   language_monitoring: boolean;
 
-  @OneToOne(() => Child, (child) => child.settings)
-  @JoinColumn({ name: 'child_id' })
-  child: Child;
+  // Settings belong to a User (the Child)
+  @ManyToOne(() => User, (user) => user.settings)
+  @JoinColumn({ name: 'user_id' })
+  user: User;
 
   @Column()
-  child_id: string;
+  user_id: string;
 }

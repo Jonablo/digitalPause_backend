@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, ManyToOne, OneToMany } from 'typeorm';
-import { Child } from '../../children/entities/child.entity';
+import { User } from '../../users/entities/user.entity';
 import { PauseEvent } from './pause-event.entity';
 
 @Entity('pause_rules')
@@ -25,11 +25,11 @@ export class PauseRule {
   @Column({ default: true })
   active: boolean;
 
-  @ManyToOne(() => Child, (child) => child.pause_rules)
-  child: Child;
+  @ManyToOne(() => User, (user) => user.pause_rules)
+  user: User;
 
   @Column()
-  child_id: string;
+  user_id: string;
 
   @OneToMany(() => PauseEvent, (event) => event.rule)
   events: PauseEvent[];

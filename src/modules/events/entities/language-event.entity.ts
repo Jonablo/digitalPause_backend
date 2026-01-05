@@ -1,5 +1,5 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
-import { Child } from '../../children/entities/child.entity';
+import { User } from '../../users/entities/user.entity';
 
 @Entity('language_events')
 export class LanguageEvent {
@@ -19,9 +19,9 @@ export class LanguageEvent {
   @CreateDateColumn()
   detected_at: Date;
 
-  @ManyToOne(() => Child, (child) => child.language_events)
-  child: Child;
+  @ManyToOne(() => User, (user) => user.language_events)
+  user: User;
 
   @Column()
-  child_id: string;
+  user_id: string;
 }

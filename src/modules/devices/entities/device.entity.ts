@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne, OneToMany } from 'typeorm';
-import { Child } from '../../children/entities/child.entity';
-import { UsageSession } from 'src/modules/sessions/entities/usage-session.entity';
-
+import { User } from '../../users/entities/user.entity';
+import { UsageSession } from '../../sessions/entities/usage-session.entity';
 
 @Entity('devices')
 export class Device {
@@ -17,14 +16,17 @@ export class Device {
   @Column({ default: true })
   is_active: boolean;
 
+  @Column({ default: false })
+  is_locked: boolean; // REMOTE LOCK STATUS
+
   @CreateDateColumn()
   created_at: Date;
 
-  @ManyToOne(() => Child, (child) => child.devices)
-  child: Child;
+  @ManyToOne(() => User, (user) => user.devices)
+  user: User;
 
   @Column()
-  child_id: string;
+  user_id: string;
 
   @OneToMany(() => UsageSession, (session) => session.device)
   sessions: UsageSession[];

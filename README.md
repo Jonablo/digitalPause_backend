@@ -29,6 +29,11 @@ La base de datos modela la relación Padre-Hijo y el uso de dispositivos sin inv
 ### Auth & Bootstrap
 - `POST /users/bootstrap`: Recibe las credenciales (JWT/ClerkID) y devuelve el estado completo del usuario (perfil, hijos, configuraciones). **Punto de entrada único para la app móvil.**
 
+### Gestión de Perfiles (Padre-Hijo)
+- `POST /children`: Crea un nuevo perfil de hijo vinculado automáticamente al usuario autenticado.
+- `GET /children`: Lista todos los hijos asociados al usuario.
+- `PATCH /children/:id/settings`: Actualiza las reglas de bienestar (tiempo límite, monitoreo) de un hijo.
+
 ### Análisis (IA)
 - `GET /analyze`: Puente hacia el servicio de Python para clasificar texto bajo demanda (usado internamente o para pruebas).
 

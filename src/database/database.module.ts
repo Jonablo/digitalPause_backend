@@ -4,15 +4,16 @@ import { ConfigModule, ConfigService } from '@nestjs/config';
 
 // Entities
 import { User } from '../modules/users/entities/user.entity';
-import { Child } from '../modules/children/entities/child.entity';
+// Child entity removed
 import { Device } from '../modules/devices/entities/device.entity';
-import { Settings } from '../modules/children/entities/settings.entity';
+import { Settings } from '../modules/users/entities/settings.entity';
 import { UsageSession } from '../modules/sessions/entities/usage-session.entity';
 import { LanguageEvent } from '../modules/events/entities/language-event.entity';
 import { PauseRule } from '../modules/events/entities/pause-rule.entity';
 import { PauseEvent } from '../modules/events/entities/pause-event.entity';
 import { Notification } from '../modules/notifications/entities/notification.entity';
 import { Recommendation } from '../modules/recommendations/entities/recommendation.entity';
+import { FamilyRelation } from '../modules/family/entities/family-relation.entity';
 
 @Module({
   imports: [
@@ -27,8 +28,9 @@ import { Recommendation } from '../modules/recommendations/entities/recommendati
         password: configService.get<string>('DB_PASS', 'postgres'),
         database: configService.get<string>('DB_NAME', 'digital_pause'),
         entities: [
-          User, Child, Device, Settings, UsageSession, 
-          LanguageEvent, PauseRule, PauseEvent, Notification, Recommendation
+          User, Device, Settings, UsageSession, 
+          LanguageEvent, PauseRule, PauseEvent, Notification, Recommendation,
+          FamilyRelation
         ],
         synchronize: true, // Only for development
       }),

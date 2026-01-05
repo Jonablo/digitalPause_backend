@@ -8,6 +8,9 @@ async function bootstrap() {
   // Enable CORS
   app.enableCors();
 
+  // Set Global Prefix
+  app.setGlobalPrefix('api');
+
   // Swagger Config
   const config = new DocumentBuilder()
     .setTitle('DigitalPause API')

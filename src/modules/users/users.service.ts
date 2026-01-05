@@ -2,21 +2,26 @@ import { Injectable } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
 import { Repository } from 'typeorm';
 import { User } from './entities/user.entity';
-import { Child } from '../children/entities/child.entity';
 
 @Injectable()
 export class UsersService {
   constructor(
     @InjectRepository(User)
     private usersRepository: Repository<User>,
-    @InjectRepository(Child)
-    private childRepository: Repository<Child>,
   ) {}
 
   async findOneByClerkId(clerkId: string): Promise<User | null> {
     return this.usersRepository.findOne({
       where: { clerk_id: clerkId },
-      relations: ['children', 'children.settings'],
+      // Now we load family relations instead of 'children'
+      relations: [
+          'parent_relations', // If I am a child, who is my parent?
+          'parent_relations.parent',
+          'child_relations', // If I am a parent, who are my children?
+          'child_relations.child',
+          'devices',
+          'settings'
+      ],
     });
   }
 
@@ -26,16 +31,27 @@ export class UsersService {
   }
 
   async bootstrap(clerkId: string, email: string): Promise<User> {
+    // 1. Try to find user by Clerk ID
     let user = await this.findOneByClerkId(clerkId);
     
-    if (!user) {
-      // First time login - create user
-      user = await this.create({
-        clerk_id: clerkId,
-        email: email,
-        name: email.split('@')[0], // Default name
-      });
+    if (user) return user;
+
+    // 2. If not found by Clerk ID, check if they were invited by Email (Shadow User)
+    user = await this.usersRepository.findOne({ where: { email: email } });
+
+    if (user) {
+        // Claim the Shadow User!
+        user.clerk_id = clerkId;
+        user.name = email.split('@')[0]; // Update name or keep existing
+        return this.usersRepository.save(user);
     }
+
+    // 3. Create fresh user
+    user = await this.create({
+      clerk_id: clerkId,
+      email: email,
+      name: email.split('@')[0],
+    });
 
     return user;
   }

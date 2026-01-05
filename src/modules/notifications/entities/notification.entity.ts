@@ -1,7 +1,6 @@
 import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, ManyToOne } from 'typeorm';
-import { Child } from '../../children/entities/child.entity';
-import { Recommendation } from 'src/modules/recommendations/entities/recommendation.entity';
-
+import { User } from '../../users/entities/user.entity';
+import { Recommendation } from '../../recommendations/entities/recommendation.entity';
 
 @Entity('notifications')
 export class Notification {
@@ -17,11 +16,11 @@ export class Notification {
   @Column({ default: false })
   read: boolean;
 
-  @ManyToOne(() => Child, (child) => child.notifications)
-  child: Child;
+  @ManyToOne(() => User, (user) => user.notifications)
+  user: User;
 
   @Column()
-  child_id: string;
+  user_id: string;
 
   @ManyToOne(() => Recommendation)
   recommendation: Recommendation;
