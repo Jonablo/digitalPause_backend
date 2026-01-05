@@ -51,6 +51,9 @@ export class FamilyService {
     const relation = this.familyRepository.create({
       parent: parent,
       child: child,
+      // Explicitly set IDs to satisfy potential TypeORM sync issues or column constraints
+      parent_id: parent.id,
+      child_id: child.id,
       status: 'active', // Or 'pending' if we want 2-way handshake
     });
 

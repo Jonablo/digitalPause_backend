@@ -1,68 +1,93 @@
 # DigitalPause Backend (NestJS + Python AI)
 
-Backend robusto para la plataforma de Bienestar Digital, diseñado con una arquitectura modular y centrado en la privacidad.
+Robust backend for the Digital Wellbeing platform, designed with a modular architecture and focused on privacy, replicating features similar to "Google Family Link".
 
-> **“El endpoint `/users/bootstrap` se utiliza para inicializar el estado del usuario dentro del dominio de la aplicación una vez autenticado por el proveedor externo de identidad.”**
+> **"The `/api/users/bootstrap` endpoint is used to initialize the user state within the application domain once authenticated by the external identity provider."**
 
-## Arquitectura del Sistema
+## System Architecture
 
-El sistema utiliza **NestJS** como orquestador principal, conectado a una base de datos **PostgreSQL** para la persistencia de entidades de dominio y un microservicio de **Python** para análisis emocional ligero.
+The system uses **NestJS** as the main orchestrator, connected to a **PostgreSQL** database for domain entity persistence and a **Python** microservice for lightweight emotional analysis.
 
-### Entidades Principales (ERD)
+### Core Concepts (Family Link Model)
 
-La base de datos modela la relación Padre-Hijo y el uso de dispositivos sin invadir la privacidad del contenido.
+Unlike traditional parent-child models where the child is just a sub-entity, **DigitalPause treats every user as a first-class citizen**.
 
-1.  **Users (Padres/Tutores)**: Entidad raíz. Se crea/vincula mediante autenticación externa (Clerk).
-2.  **Children (Perfiles)**: Perfiles gestionados por un usuario.
-3.  **Devices**: Dispositivos asociados a un niño.
-4.  **UsageSessions**: Registros de tiempo de uso (Inicio/Fin).
-5.  **LanguageEvents**: Eventos de detección de palabras clave (Categoría y Severidad, **NO texto literal**).
-6.  **PauseRules**: Reglas configuradas para limitar el uso.
+1.  **Users**: Every person (Parent or Child) is a `User`. They authenticate independently via Clerk.
+2.  **Family Relations**: A directional link connecting two Users (`Parent` -> `Child`).
+    *   This allows the Child to have their own device, email, and session.
+    *   The Parent gains control permissions over the linked Child's account.
+3.  **Roles**: Dynamic roles determined by relations:
+    *   `parent`: A user who supervises others.
+    *   `child`: A user who is supervised.
+    *   `new_user`: A user with no links yet.
 
-### Seguridad y Privacidad
+### Privacy & Security
 
-- **Autenticación Delegada**: No almacenamos contraseñas. Confiamos en tokens JWT validados (Clerk).
-- **Privacidad de Datos**: El análisis de lenguaje se realiza en memoria o mediante el servicio de IA, almacenando únicamente metadatos (categoría de riesgo) y no el contenido de las conversaciones.
+-   **Delegated Authentication**: We do not store passwords. We rely on validated JWT tokens (Clerk).
+-   **Data Privacy**: Language analysis is performed in memory or via the AI service, storing only metadata (risk category, severity) and **NEVER the literal text content** of conversations.
 
-## API Endpoints Clave
+## Key API Endpoints
+
+Global Prefix: `/api`
 
 ### Auth & Bootstrap
-- `POST /users/bootstrap`: Recibe las credenciales (JWT/ClerkID) y devuelve el estado completo del usuario (perfil, hijos, configuraciones). **Punto de entrada único para la app móvil.**
 
-### Gestión de Perfiles (Padre-Hijo)
-- `POST /children`: Crea un nuevo perfil de hijo vinculado automáticamente al usuario autenticado.
-- `GET /children`: Lista todos los hijos asociados al usuario.
-- `PATCH /children/:id/settings`: Actualiza las reglas de bienestar (tiempo límite, monitoreo) de un hijo.
+*   `POST /users/bootstrap`:
+    *   **Input**: Clerk ID & Email.
+    *   **Logic**: Checks if the user exists locally. If not, creates them. Checks if the user was previously invited via email (Shadow User) and claims the profile.
+    *   **Output**: User profile + **Calculated Role** (`parent`, `child`, `new_user`).
 
-### Análisis (IA)
-- `GET /analyze`: Puente hacia el servicio de Python para clasificar texto bajo demanda (usado internamente o para pruebas).
+### Family Linking
 
-## Configuración y Ejecución
+*   `POST /family/link`:
+    *   **Action**: A Parent invites a Child by their Google Email.
+    *   **Logic**: Creates a `FamilyRelation`. If the Child doesn't exist yet, a "Shadow User" is created waiting for them to sign up.
+*   `GET /family/children`: Returns the list of children linked to the authenticated parent.
 
-### Requisitos
-- Node.js v18+
-- Python 3.8+
-- Docker (opcional, para Base de Datos)
+### Device Control
 
-### 1. Base de Datos
-Levanta PostgreSQL usando Docker:
+*   `POST /family/device/:deviceId/lock`:
+    *   **Action**: Remote Lock/Unlock of a child's device.
+    *   **Security**: Verifies that the requester is the parent of the device's owner.
+
+## Setup & Running
+
+### Prerequisites
+
+*   Node.js v18+
+*   Python 3.8+
+*   Docker (for PostgreSQL)
+
+### 1. Database
+
+Start PostgreSQL using Docker:
+
 ```bash
 docker-compose up -d
 ```
 
 ### 2. Backend (NestJS)
+
 ```bash
+# Install dependencies
 npm install
+
+# Start development server
 npm run start:dev
 ```
 
-### 3. Servicio IA (Python)
-```bash
-pip install -r ai_service/requirements.txt
-```
-*El backend invocará automáticamente el script de Python cuando sea necesario.*
+### 3. AI Service (Python)
 
-## Documentación (Swagger)
-Una vez iniciado el servidor, visita:
-`http://localhost:3000/api`
-Para ver la documentación interactiva de todos los endpoints.
+The Python environment is required for the sentiment analysis module.
+
+```bash
+cd ai_service
+pip install -r requirements.txt
+```
+*Note: The backend automatically invokes the Python script for analysis.*
+
+## Documentation (Swagger)
+
+Once the server is running, visit:
+**`http://localhost:3000/api`**
+To view the interactive documentation for all endpoints.
