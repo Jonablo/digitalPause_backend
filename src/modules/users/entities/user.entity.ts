@@ -1,4 +1,4 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, ManyToOne, JoinTable } from 'typeorm';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, ManyToOne, JoinTable, OneToOne } from 'typeorm';
 import { Device } from '../../devices/entities/device.entity';
 import { Settings } from './settings.entity'; 
 import { FamilyRelation } from '../../family/entities/family-relation.entity';
@@ -17,18 +17,15 @@ export class User {
   @Column({ nullable: true })
   name: string;
 
-  // External ID from Clerk
   @Column({ unique: true, nullable: true })
   clerk_id: string;
 
   @CreateDateColumn()
   created_at: Date;
 
-  // I am the parent in these relations
   @OneToMany(() => FamilyRelation, (relation) => relation.parent)
   parent_relations: FamilyRelation[];
 
-  // I am the child in these relations
   @OneToMany(() => FamilyRelation, (relation) => relation.child)
   child_relations: FamilyRelation[];
 
@@ -37,8 +34,8 @@ export class User {
   devices: Device[];
 
   // My settings
-  @OneToMany(() => Settings, (settings) => settings.user)
-  settings: Settings[];
+  @OneToOne(() => Settings, (settings) => settings.user)
+  settings: Settings;
 
   // My Notifications
   @OneToMany(() => Notification, (notification) => notification.user)

@@ -5,6 +5,8 @@ import { AppService } from './app.service';
 import { DatabaseModule } from './database/database.module';
 import { UsersModule } from './modules/users/users.module';
 import { FamilyModule } from './modules/family/family.module'; // Changed from ChildrenModule
+import { RealtimeModule } from './realtime/realtime.module';
+import { MessagingModule } from './messaging/messaging.module';
 
 @Module({
   imports: [
@@ -12,6 +14,8 @@ import { FamilyModule } from './modules/family/family.module'; // Changed from C
     DatabaseModule,
     UsersModule,
     FamilyModule,
+    RealtimeModule,
+    MessagingModule,
   ],
   controllers: [AppController],
   providers: [AppService],

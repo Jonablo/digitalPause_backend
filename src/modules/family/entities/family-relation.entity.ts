@@ -19,8 +19,11 @@ export class FamilyRelation {
   @Column()
   child_id: string;
 
-  @Column({ default: 'active' }) // pending, active, blocked
+  @Column({ default: 'pending' }) // pending, active, revoked
   status: string;
+
+  @Column({ type: 'jsonb', nullable: true }) // e.g. { lock_device: true, view_reports: true }
+  permissions: Record<string, any>;
 
   @CreateDateColumn()
   created_at: Date;

@@ -15,8 +15,8 @@ export class Settings {
   @Column({ default: false })
   language_monitoring: boolean;
 
-  // Settings belong to a User (the Child)
-  @ManyToOne(() => User, (user) => user.settings)
+  // Settings belong to a User (1:1)
+  @OneToOne(() => User, (user) => user.settings)
   @JoinColumn({ name: 'user_id' })
   user: User;
 

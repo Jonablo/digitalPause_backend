@@ -19,6 +19,9 @@ export class Device {
   @Column({ default: false })
   is_locked: boolean; // REMOTE LOCK STATUS
 
+  @Column({ nullable: true })
+  fcm_token: string; // Push token for FCM fallback
+
   @CreateDateColumn()
   created_at: Date;
 

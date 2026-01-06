@@ -4,6 +4,8 @@ import { Repository } from 'typeorm';
 import { FamilyRelation } from './entities/family-relation.entity';
 import { User } from '../users/entities/user.entity';
 import { Device } from '../devices/entities/device.entity';
+import { RealtimeGateway } from '../../realtime/realtime.gateway';
+import { FcmService } from '../../messaging/fcm.service';
 
 @Injectable()
 export class FamilyService {
@@ -14,6 +16,8 @@ export class FamilyService {
     private userRepository: Repository<User>,
     @InjectRepository(Device)
     private deviceRepository: Repository<Device>,
+    private realtimeGateway: RealtimeGateway,
+    private fcmService: FcmService,
   ) {}
 
   // 1. Link Parent to Child via Email
@@ -28,10 +32,6 @@ export class FamilyService {
     let child = await this.userRepository.findOne({ where: { email: childEmail } });
 
     if (!child) {
-      // Create Shadow User (Pending Signup)
-      // This allows the link to exist even if the child hasn't installed the app yet.
-      // When they sign up with this email, they will inherit this user ID or we handle merge.
-      // For simplicity here: we assume they will claim this email.
       child = this.userRepository.create({
         email: childEmail,
         name: childEmail.split('@')[0],
@@ -39,7 +39,6 @@ export class FamilyService {
       await this.userRepository.save(child);
     }
 
-    // Check if link already exists
     const existingLink = await this.familyRepository.findOne({
       where: { parent_id: parent.id, child_id: child.id },
     });
@@ -51,12 +50,24 @@ export class FamilyService {
     const relation = this.familyRepository.create({
       parent: parent,
       child: child,
-      // Explicitly set IDs to satisfy potential TypeORM sync issues or column constraints
       parent_id: parent.id,
       child_id: child.id,
-      status: 'active', // Or 'pending' if we want 2-way handshake
+      status: 'pending',
+      permissions: { lock_device: true, view_reports: true },
     });
 
+    return this.familyRepository.save(relation);
+  }
+
+  // (handshake completes)
+  async acceptLink(childClerkId: string, parentEmail: string) {
+    const child = await this.userRepository.findOne({ where: { clerk_id: childClerkId } });
+    if (!child) throw new NotFoundException('Child not found');
+    const parent = await this.userRepository.findOne({ where: { email: parentEmail } });
+    if (!parent) throw new NotFoundException('Parent not found');
+    const relation = await this.familyRepository.findOne({ where: { parent_id: parent.id, child_id: child.id } });
+    if (!relation) throw new NotFoundException('Relation not found');
+    relation.status = 'active';
     return this.familyRepository.save(relation);
   }
 
@@ -75,8 +86,6 @@ export class FamilyService {
 
   // 3. Remote Lock/Unlock Device
   async toggleDeviceLock(parentClerkId: string, deviceId: string, lock: boolean) {
-    // Verify that this device belongs to a child of this parent
-    // This is a crucial security check!
     const device = await this.deviceRepository.findOne({ 
         where: { id: deviceId },
         relations: ['user']
@@ -84,7 +93,6 @@ export class FamilyService {
 
     if (!device) throw new NotFoundException('Device not found');
 
-    // Check relationship
     const parent = await this.userRepository.findOne({ where: { clerk_id: parentClerkId } });
     const isMyChild = await this.familyRepository.findOne({
         where: { parent_id: parent.id, child_id: device.user.id }
@@ -95,6 +103,26 @@ export class FamilyService {
     }
 
     device.is_locked = lock;
+    await this.deviceRepository.save(device);
+
+    // Try realtime via socket
+    const emitted = this.realtimeGateway.emitToUser(device.user.id, 'cmd_lock_device', { deviceId, locked: lock });
+    if (!emitted && device.fcm_token) {
+      await this.fcmService.sendDataMessage(device.fcm_token, {
+        cmd: 'lock_device',
+        deviceId,
+        locked: String(lock),
+      });
+    }
+    return device;
+  }
+
+  async registerDeviceToken(userClerkId: string, deviceId: string, fcmToken: string) {
+    const user = await this.userRepository.findOne({ where: { clerk_id: userClerkId } });
+    if (!user) throw new NotFoundException('User not found');
+    const device = await this.deviceRepository.findOne({ where: { id: deviceId, user: { id: user.id } }, relations: ['user'] });
+    if (!device) throw new NotFoundException('Device not found for this user');
+    device.fcm_token = fcmToken;
     return this.deviceRepository.save(device);
   }
 }

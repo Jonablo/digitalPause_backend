@@ -11,16 +11,18 @@ export class FamilyController {
   @ApiOperation({ summary: 'Link a child account by email (Family Link style)' })
   async linkChild(
     @Query('clerkId') clerkId: string, 
-    @Body() body: { childEmail: string }
+    @Body() body: { clerkId?: string; childEmail: string }
   ) {
-    if (!clerkId) throw new UnauthorizedException('Clerk ID is required');
-    return this.familyService.linkChild(clerkId, body.childEmail);
+    const effectiveClerkId = body.clerkId || clerkId;
+    if (!effectiveClerkId) throw new UnauthorizedException('Clerk ID is required');
+    return this.familyService.linkChild(effectiveClerkId, body.childEmail);
   }
 
   @Get('children')
   @ApiOperation({ summary: 'Get all children linked to this parent account' })
-  async getChildren(@Query('clerkId') clerkId: string) {
-    return this.familyService.getMyChildren(clerkId);
+  async getChildren(@Query('clerkId') clerkId: string, @Body() body: { clerkId?: string }) {
+    const effectiveClerkId = body.clerkId || clerkId;
+    return this.familyService.getMyChildren(effectiveClerkId);
   }
 
   @Post('device/:deviceId/lock')
@@ -28,8 +30,26 @@ export class FamilyController {
   async lockDevice(
     @Query('clerkId') clerkId: string,
     @Param('deviceId') deviceId: string,
-    @Body() body: { locked: boolean }
+    @Body() body: { clerkId?: string; locked: boolean }
   ) {
-    return this.familyService.toggleDeviceLock(clerkId, deviceId, body.locked);
+    const effectiveClerkId = body.clerkId || clerkId;
+    return this.familyService.toggleDeviceLock(effectiveClerkId, deviceId, body.locked);
+  }
+
+  @Post('accept')
+  @ApiOperation({ summary: 'Child accepts link invitation from a Parent' })
+  async acceptLink(
+    @Body() body: { childClerkId: string; parentEmail: string }
+  ) {
+    return this.familyService.acceptLink(body.childClerkId, body.parentEmail);
+  }
+
+  @Post('device/:deviceId/register-token')
+  @ApiOperation({ summary: 'Register FCM token for a device' })
+  async registerToken(
+    @Param('deviceId') deviceId: string,
+    @Body() body: { clerkId: string; fcmToken: string }
+  ) {
+    return this.familyService.registerDeviceToken(body.clerkId, deviceId, body.fcmToken);
   }
 }
