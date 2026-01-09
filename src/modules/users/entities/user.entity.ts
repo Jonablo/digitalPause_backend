@@ -1,51 +1,13 @@
-import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn, OneToMany, ManyToOne, JoinTable, OneToOne } from 'typeorm';
-import { Device } from '../../devices/entities/device.entity';
-import { Settings } from './settings.entity'; 
-import { FamilyRelation } from '../../family/entities/family-relation.entity';
-import { Notification } from '../../notifications/entities/notification.entity';
-import { LanguageEvent } from '../../events/entities/language-event.entity';
-import { PauseRule } from '../../events/entities/pause-rule.entity';
+import { Entity, PrimaryGeneratedColumn, Column, CreateDateColumn } from 'typeorm';
 
 @Entity('users')
 export class User {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
-  @Column({ unique: true, nullable: true })
-  email: string;
-
-  @Column({ nullable: true })
-  name: string;
-
-  @Column({ unique: true, nullable: true })
+  @Column({ unique: true })
   clerk_id: string;
 
   @CreateDateColumn()
   created_at: Date;
-
-  @OneToMany(() => FamilyRelation, (relation) => relation.parent)
-  parent_relations: FamilyRelation[];
-
-  @OneToMany(() => FamilyRelation, (relation) => relation.child)
-  child_relations: FamilyRelation[];
-
-  // My devices
-  @OneToMany(() => Device, (device) => device.user)
-  devices: Device[];
-
-  // My settings
-  @OneToOne(() => Settings, (settings) => settings.user)
-  settings: Settings;
-
-  // My Notifications
-  @OneToMany(() => Notification, (notification) => notification.user)
-  notifications: Notification[];
-
-  // My Language Analysis Events
-  @OneToMany(() => LanguageEvent, (event) => event.user)
-  language_events: LanguageEvent[];
-
-  // My Pause Rules
-  @OneToMany(() => PauseRule, (rule) => rule.user)
-  pause_rules: PauseRule[];
 }

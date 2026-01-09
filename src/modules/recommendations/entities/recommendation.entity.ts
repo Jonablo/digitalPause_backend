@@ -1,21 +1,24 @@
 import { Entity, PrimaryGeneratedColumn, Column } from 'typeorm';
 
-@Entity('recommendations')
-export class Recommendation {
+@Entity('wellness_recommendations')
+export class WellnessRecommendation {
   @PrimaryGeneratedColumn('uuid')
   id: string;
 
   @Column()
-  title: string;
+  trigger: string; // e.g., 'overuse', 'night_usage'
 
   @Column()
-  description: string;
+  category: string; // 'meditation', 'article', 'video'
+
+  @Column()
+  content: string;
 
   @Column({ nullable: true })
-  content_url: string;
+  media_url: string;
 
-  @Column({ nullable: true })
-  content_type: string;
+  @Column({ default: 0 })
+  duration_minutes: number;
 
   @Column({ default: true })
   active: boolean;
