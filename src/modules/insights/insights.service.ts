@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThanOrEqual } from 'typeorm';
 import { Insight } from './entities/insight.entity';
 import { User } from '../users/entities/user.entity';
 import { UsageMetric } from '../metrics/entities/usage-metric.entity';
@@ -47,11 +47,15 @@ export class InsightsService {
     });
 
     if (lastUsage) {
+      const dateStr = lastUsage.usage_date.toString();
       if (lastUsage.night_usage) {
-        await this.createInsight(user, 'fatigue', 'Uso nocturno detectado. Tu descanso es vital.', 'medium', lastUsage.usage_date.toString());
+        await this.createInsight(user, 'fatigue', 'Uso nocturno detectado. Tu descanso es vital.', 'medium', dateStr);
       }
       if (lastUsage.total_usage_seconds > 14400) { // > 4 hours
-        await this.createInsight(user, 'overuse', 'Has usado el móvil más de 4 horas hoy.', 'high', lastUsage.usage_date.toString());
+        await this.createInsight(user, 'overuse', 'Has usado el móvil más de 4 horas hoy.', 'high', dateStr);
+      }
+      if (lastUsage.longest_session_seconds > 3600) { // > 1 hour continuous
+        await this.createInsight(user, 'focus_strain', 'Sesiones muy largas sin pausas.', 'medium', dateStr);
       }
     }
 
@@ -61,8 +65,33 @@ export class InsightsService {
       order: { record_date: 'DESC' },
     });
 
-    if (lastInteraction && lastInteraction.scroll_events > 1000) {
-       await this.createInsight(user, 'stimulation', 'Nivel de scroll muy alto. ¿Doomscrolling?', 'low', lastInteraction.record_date.toString());
+    if (lastInteraction) {
+       const dateStr = lastInteraction.record_date.toString();
+       if (lastInteraction.scroll_events > 1500) {
+          await this.createInsight(user, 'stimulation', 'Nivel de scroll muy alto. Posible doomscrolling.', 'high', dateStr);
+       }
+       if (lastInteraction.taps_count > 2000) {
+          await this.createInsight(user, 'high_interaction', 'Interactividad intensa detectada.', 'low', dateStr);
+       }
+    }
+
+    // 3. Analyze Emotions (Last 3 days)
+    const threeDaysAgo = new Date();
+    threeDaysAgo.setDate(threeDaysAgo.getDate() - 3);
+    
+    const recentEmotions = await this.emotionalRepo.find({
+        where: { 
+            user_id: user.id,
+            created_at: MoreThanOrEqual(threeDaysAgo)
+        }
+    });
+
+    const negativeEmotions = recentEmotions.filter(e => 
+        ['frustration', 'anxiety', 'sadness', 'anger', 'stress'].includes(e.emotion.toLowerCase())
+    );
+
+    if (negativeEmotions.length >= 2) {
+        await this.createInsight(user, 'emotional_strain', 'Emociones negativas recurrentes recientes.', 'high', new Date().toISOString().split('T')[0]);
     }
 
     return { status: 'Insights generated' };

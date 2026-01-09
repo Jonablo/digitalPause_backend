@@ -5,6 +5,7 @@ import { InteractionMetric } from './entities/interaction-metric.entity';
 import { EmotionalMetric } from './entities/emotional-metric.entity';
 import { User } from '../users/entities/user.entity';
 import { MetricsController } from './metrics.controller';
+import { EmotionsController } from './emotions.controller';
 import { MetricsService } from './metrics.service';
 
 @Module({
@@ -16,7 +17,7 @@ import { MetricsService } from './metrics.service';
       User,
     ]),
   ],
-  controllers: [MetricsController],
+  controllers: [MetricsController, EmotionsController],
   providers: [MetricsService],
   exports: [MetricsService],
 })

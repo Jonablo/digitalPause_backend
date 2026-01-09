@@ -1,19 +1,12 @@
 import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
-
-// Entities
 import { User } from '../modules/users/entities/user.entity';
-// Child entity removed
-import { Device } from '../modules/devices/entities/device.entity';
-import { Settings } from '../modules/users/entities/settings.entity';
-import { UsageSession } from '../modules/sessions/entities/usage-session.entity';
-import { LanguageEvent } from '../modules/events/entities/language-event.entity';
-import { PauseRule } from '../modules/events/entities/pause-rule.entity';
-import { PauseEvent } from '../modules/events/entities/pause-event.entity';
-import { Notification } from '../modules/notifications/entities/notification.entity';
-import { Recommendation } from '../modules/recommendations/entities/recommendation.entity';
-import { FamilyRelation } from '../modules/family/entities/family-relation.entity';
+import { UsageMetric } from '../modules/metrics/entities/usage-metric.entity';
+import { InteractionMetric } from '../modules/metrics/entities/interaction-metric.entity';
+import { EmotionalMetric } from '../modules/metrics/entities/emotional-metric.entity';
+import { Insight } from '../modules/insights/entities/insight.entity';
+import { WellnessRecommendation } from '../modules/recommendations/entities/recommendation.entity';
 
 @Module({
   imports: [
@@ -28,9 +21,12 @@ import { FamilyRelation } from '../modules/family/entities/family-relation.entit
         password: configService.get<string>('DB_PASS', 'postgres'),
         database: configService.get<string>('DB_NAME', 'digital_pause'),
         entities: [
-          User, Device, Settings, UsageSession, 
-          LanguageEvent, PauseRule, PauseEvent, Notification, Recommendation,
-          FamilyRelation
+          User,
+          UsageMetric,
+          InteractionMetric,
+          EmotionalMetric,
+          Insight,
+          WellnessRecommendation,
         ],
         synchronize: true, // Only for development
       }),

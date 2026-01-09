@@ -1,6 +1,8 @@
 import { Controller, Post, Body, Query, BadRequestException } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { MetricsService } from './metrics.service';
+import { CreateUsageMetricDto } from './dto/create-usage-metric.dto';
+import { CreateInteractionMetricDto } from './dto/create-interaction-metric.dto';
 
 @ApiTags('Metrics')
 @Controller('metrics')
@@ -12,7 +14,7 @@ export class MetricsController {
   @ApiQuery({ name: 'clerkId', required: true })
   async submitUsage(
     @Query('clerkId') clerkId: string,
-    @Body() body: any,
+    @Body() body: CreateUsageMetricDto,
   ) {
     if (!clerkId) throw new BadRequestException('Clerk ID required');
     return this.metricsService.recordUsage(clerkId, body);
@@ -23,7 +25,7 @@ export class MetricsController {
   @ApiQuery({ name: 'clerkId', required: true })
   async submitInteractions(
     @Query('clerkId') clerkId: string,
-    @Body() body: any,
+    @Body() body: CreateInteractionMetricDto,
   ) {
     if (!clerkId) throw new BadRequestException('Clerk ID required');
     return this.metricsService.recordInteractions(clerkId, body);
