@@ -1,50 +1,189 @@
-# Welcome to your Expo app 👋
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+# 📊 Expo App Usage Tracker
 
-## Get started
+Aplicación móvil desarrollada con **Expo + React Native** que permite visualizar estadísticas de uso de aplicaciones en **Android**, utilizando la API nativa `UsageStatsManager`.
 
-1. Install dependencies
+> ⚠️ **Nota importante:**
+> Debido al uso de un **módulo nativo**, esta app **NO es compatible con Expo Go**.
+> Es obligatorio ejecutar la app mediante **build nativo**.
 
-   ```bash
-   npm install
-   ```
+---
 
-2. Start the app
+## 🚀 Características
 
-   ```bash
-   npx expo start
-   ```
+* Estadísticas de uso de aplicaciones:
 
-In the output, you'll find options to open the app in a
+  * Hoy
+  * Última semana
+  * Último mes
+* Ranking de apps más usadas
+* Tiempo total de uso
+* Solicitud automática del permiso `Usage Access`
+* UI moderna con **Expo Router + Tabs**
+* Módulo nativo Android (`PACKAGE_USAGE_STATS`)
 
-- [development build](https://docs.expo.dev/develop/development-builds/introduction/)
-- [Android emulator](https://docs.expo.dev/workflow/android-studio-emulator/)
-- [iOS simulator](https://docs.expo.dev/workflow/ios-simulator/)
-- [Expo Go](https://expo.dev/go), a limited sandbox for trying out app development with Expo
+---
 
-You can start developing by editing the files inside the **app** directory. This project uses [file-based routing](https://docs.expo.dev/router/introduction).
+## 🛠️ Tecnologías utilizadas
 
-## Get a fresh project
+* Expo SDK 54
+* React Native 0.81
+* Expo Router
+* TypeScript
+* Expo Native Modules (Android)
+* Kotlin (Android)
 
-When you're ready, run:
+---
+
+## 📋 Requisitos previos
+
+Antes de comenzar, asegúrate de tener instalado:
+
+* **Node.js** ≥ 18
+* **npm** o **yarn**
+* **Expo CLI**
+
+  ```bash
+  npm install -g expo-cli
+  ```
+* **Android Studio**
+
+  * Android SDK
+  * Emulador Android o dispositivo físico
+* **Java JDK 17**
+
+---
+
+## 📦 Instalación
+
+Clona el repositorio:
 
 ```bash
-npm run reset-project
+git clone https://github.com/Jonablo/digitalPause_backend.git
+cd expo-app-usage
 ```
 
-This command will move the starter code to the **app-example** directory and create a blank **app** directory where you can start developing.
+Instala las dependencias:
 
-## Learn more
+```bash
+npm install
+```
 
-To learn more about developing your project with Expo, look at the following resources:
+---
 
-- [Expo documentation](https://docs.expo.dev/): Learn fundamentals, or go into advanced topics with our [guides](https://docs.expo.dev/guides).
-- [Learn Expo tutorial](https://docs.expo.dev/tutorial/introduction/): Follow a step-by-step tutorial where you'll create a project that runs on Android, iOS, and the web.
+## ▶️ Ejecución en desarrollo (Android)
 
-## Join the community
+⚠️ **No usar `expo start` ni Expo Go**
 
-Join our community of developers creating universal apps.
+Ejecuta la app con build nativo:
 
-- [Expo on GitHub](https://github.com/expo/expo): View our open source platform and contribute.
-- [Discord community](https://chat.expo.dev): Chat with Expo users and ask questions.
+```bash
+npx expo run:android
+```
+
+Esto hará:
+
+* Compilación del módulo nativo
+* Instalación del APK en el emulador o dispositivo
+* Inicio automático de la app
+
+---
+
+## 🔐 Permisos requeridos
+
+La app requiere el permiso especial de Android:
+
+```
+Acceso de uso de aplicaciones
+(PACKAGE_USAGE_STATS)
+```
+
+### Flujo de permisos
+
+1. Al iniciar la app, se verifica el permiso
+2. Si no está concedido:
+
+   * Se muestra una pantalla de solicitud
+   * Se abre automáticamente la configuración del sistema
+3. El usuario debe:
+
+   * Buscar la app
+   * Activar **“Acceso de uso”**
+4. Regresar a la app
+
+---
+
+## 🧪 Scripts disponibles
+
+```bash
+npm start          # Inicia el bundler (NO recomendado para este proyecto)
+npm run android    # Ejecuta la app con build nativo Android
+npm run web        # Versión web (sin estadísticas reales)
+npm run lint       # Ejecuta ESLint
+```
+
+---
+
+## 🌐 Limitaciones por plataforma
+
+| Plataforma | Estado                   |
+| ---------- | ------------------------ |
+| Android    | ✅ Soportado              |
+| iOS        | ⚠️ No soporta UsageStats |
+| Web        | ⚠️ Módulo simulado       |
+
+---
+
+## 📱 Estructura del proyecto
+
+```
+expo-app-usage/
+├── app/                    # Rutas (Expo Router)
+├── components/             # UI y pantallas
+├── modules/
+│   └── expo-appusage/      # Módulo nativo
+│       ├── android/        # Implementación Kotlin
+│       ├── ios/            # Placeholder iOS
+│       └── src/            # Bridge JS
+├── assets/
+└── package.json
+```
+
+---
+
+## 🚢 Despliegue (APK / AAB)
+
+Para generar un build instalable:
+
+### Usando EAS Build
+
+```bash
+npx expo prebuild
+npx expo run:android --variant release
+```
+
+O configurar **EAS**:
+
+```bash
+npx expo install eas-cli
+npx eas build -p android
+```
+
+---
+
+## 🧠 Notas técnicas
+
+* El módulo nativo usa:
+
+  * `UsageStatsManager`
+  * `AppOpsManager`
+* Los datos se ordenan por `totalTimeInForeground`
+* El formato de tiempo se procesa en JS para mayor flexibilidad
+
+---
+
+## 📄 Licencia
+
+MIT © 2026
+
+---
