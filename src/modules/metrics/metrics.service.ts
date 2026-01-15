@@ -41,14 +41,28 @@ export class MetricsService {
 
   async recordInteractions(clerkId: string, data: any) {
     const user = await this.getUser(clerkId);
-    const metric = this.interactionRepo.create({
-      user,
-      user_id: user.id,
-      record_date: data.recordDate,
-      taps_count: data.tapsCount,
-      scroll_events: data.scrollEvents,
-      avg_scroll_speed: data.avgScrollSpeed,
+    let metric = await this.interactionRepo.findOne({
+      where: {
+        user_id: user.id,
+        record_date: data.recordDate,
+      },
     });
+
+    if (metric) {
+      metric.taps_count = data.tapsCount;
+      metric.scroll_events = data.scrollEvents;
+      metric.avg_scroll_speed = data.avgScrollSpeed;
+    } else {
+      metric = this.interactionRepo.create({
+        user,
+        user_id: user.id,
+        record_date: data.recordDate,
+        taps_count: data.tapsCount,
+        scroll_events: data.scrollEvents,
+        avg_scroll_speed: data.avgScrollSpeed,
+      });
+    }
+
     return this.interactionRepo.save(metric);
   }
 
