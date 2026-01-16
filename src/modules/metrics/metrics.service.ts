@@ -1,6 +1,6 @@
 import { Injectable, NotFoundException } from '@nestjs/common';
 import { InjectRepository } from '@nestjs/typeorm';
-import { Repository } from 'typeorm';
+import { Repository, MoreThanOrEqual } from 'typeorm';
 import { UsageMetric } from './entities/usage-metric.entity';
 import { InteractionMetric } from './entities/interaction-metric.entity';
 import { EmotionalMetric } from './entities/emotional-metric.entity';
@@ -76,5 +76,33 @@ export class MetricsService {
       confidence: data.confidence,
     });
     return this.emotionalRepo.save(metric);
+  }
+
+  async getInteractionHistory(
+    clerkId: string,
+    range: 'day' | 'week' | 'month' = 'week',
+  ) {
+    const user = await this.getUser(clerkId);
+
+    const today = new Date();
+    const fromDate = new Date(today);
+
+    if (range === 'week') {
+      fromDate.setDate(today.getDate() - 6);
+    } else if (range === 'month') {
+      fromDate.setDate(today.getDate() - 29);
+    }
+
+    const fromDateStr = fromDate.toISOString().split('T')[0];
+
+    const metrics = await this.interactionRepo.find({
+      where: {
+        user_id: user.id,
+        record_date: MoreThanOrEqual(fromDateStr),
+      },
+      order: { record_date: 'ASC' },
+    });
+
+    return metrics;
   }
 }

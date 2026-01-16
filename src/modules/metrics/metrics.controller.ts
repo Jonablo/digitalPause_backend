@@ -1,4 +1,4 @@
-import { Controller, Post, Body, Query, BadRequestException } from '@nestjs/common';
+import { Controller, Post, Body, Query, BadRequestException, Get } from '@nestjs/common';
 import { ApiTags, ApiOperation, ApiQuery } from '@nestjs/swagger';
 import { MetricsService } from './metrics.service';
 import { CreateUsageMetricDto } from './dto/create-usage-metric.dto';
@@ -29,5 +29,17 @@ export class MetricsController {
   ) {
     if (!clerkId) throw new BadRequestException('Clerk ID required');
     return this.metricsService.recordInteractions(clerkId, body);
+  }
+
+  @Get('interactions')
+  @ApiOperation({ summary: 'Get interaction metrics history' })
+  @ApiQuery({ name: 'clerkId', required: true })
+  @ApiQuery({ name: 'range', required: false, enum: ['day', 'week', 'month'] })
+  async getInteractions(
+    @Query('clerkId') clerkId: string,
+    @Query('range') range: 'day' | 'week' | 'month' = 'week',
+  ) {
+    if (!clerkId) throw new BadRequestException('Clerk ID required');
+    return this.metricsService.getInteractionHistory(clerkId, range);
   }
 }
