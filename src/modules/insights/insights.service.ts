@@ -67,11 +67,14 @@ export class InsightsService {
 
     if (lastInteraction) {
        const dateStr = lastInteraction.record_date.toString();
-       if (lastInteraction.scroll_events > 1500) {
-          await this.createInsight(user, 'stimulation', 'Nivel de scroll muy alto. Posible doomscrolling.', 'high', dateStr);
-       }
-       if (lastInteraction.taps_count > 2000) {
-          await this.createInsight(user, 'high_interaction', 'Interactividad intensa detectada.', 'low', dateStr);
+       const totalInteractions = (lastInteraction.taps_count || 0) + (lastInteraction.scroll_events || 0);
+
+       if (totalInteractions >= 1700) {
+          await this.createInsight(user, 'intensity_level', 'Uso crítico detectado. Riesgo de agotamiento.', 'critical', dateStr);
+       } else if (totalInteractions >= 1201) {
+          await this.createInsight(user, 'intensity_level', 'Uso muy alto detectado. Sobrecarga cognitiva.', 'high', dateStr);
+       } else if (totalInteractions >= 801) {
+          await this.createInsight(user, 'intensity_level', 'Uso alto detectado. Fatiga visual incipiente.', 'medium', dateStr);
        }
     }
 

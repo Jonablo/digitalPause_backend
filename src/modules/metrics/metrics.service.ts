@@ -5,6 +5,7 @@ import { UsageMetric } from './entities/usage-metric.entity';
 import { InteractionMetric } from './entities/interaction-metric.entity';
 import { EmotionalMetric } from './entities/emotional-metric.entity';
 import { User } from '../users/entities/user.entity';
+import { InsightsService } from '../insights/insights.service';
 
 @Injectable()
 export class MetricsService {
@@ -17,6 +18,7 @@ export class MetricsService {
     private emotionalRepo: Repository<EmotionalMetric>,
     @InjectRepository(User)
     private userRepo: Repository<User>,
+    private insightsService: InsightsService,
   ) {}
 
   private async getUser(clerkId: string): Promise<User> {
@@ -63,7 +65,9 @@ export class MetricsService {
       });
     }
 
-    return this.interactionRepo.save(metric);
+    const savedMetric = await this.interactionRepo.save(metric);
+    await this.insightsService.generateInsights(clerkId);
+    return savedMetric;
   }
 
   async recordEmotion(clerkId: string, data: any) {
