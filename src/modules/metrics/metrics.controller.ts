@@ -31,6 +31,20 @@ export class MetricsController {
     return this.metricsService.recordInteractions(clerkId, body);
   }
 
+  @Post('screen-time-limit')
+  @ApiOperation({ summary: 'Set daily screen time limit for user' })
+  @ApiQuery({ name: 'clerkId', required: true })
+  async setScreenTimeLimit(
+    @Query('clerkId') clerkId: string,
+    @Body() body: { dailyLimitSeconds: number; strictness?: string },
+  ) {
+    if (!clerkId) throw new BadRequestException('Clerk ID required');
+    if (typeof body.dailyLimitSeconds !== 'number' || body.dailyLimitSeconds <= 0) {
+      throw new BadRequestException('dailyLimitSeconds must be a positive number');
+    }
+    return this.metricsService.updateScreenTimeLimit(clerkId, body);
+  }
+
   @Get('interactions')
   @ApiOperation({ summary: 'Get interaction metrics history' })
   @ApiQuery({ name: 'clerkId', required: true })
@@ -41,5 +55,13 @@ export class MetricsController {
   ) {
     if (!clerkId) throw new BadRequestException('Clerk ID required');
     return this.metricsService.getInteractionHistory(clerkId, range);
+  }
+
+  @Get('screen-time-summary')
+  @ApiOperation({ summary: 'Get today screen time usage vs configured limit' })
+  @ApiQuery({ name: 'clerkId', required: true })
+  async getScreenTimeSummary(@Query('clerkId') clerkId: string) {
+    if (!clerkId) throw new BadRequestException('Clerk ID required');
+    return this.metricsService.getScreenTimeSummary(clerkId);
   }
 }

@@ -27,6 +27,65 @@ export class MetricsService {
     return user;
   }
 
+  async updateScreenTimeLimit(clerkId: string, data: { dailyLimitSeconds: number; strictness?: string }) {
+    const user = await this.getUser(clerkId);
+    user.daily_limit_seconds = data.dailyLimitSeconds;
+    user.strictness = data.strictness || null;
+    await this.userRepo.save(user);
+
+    return {
+      dailyLimitSeconds: user.daily_limit_seconds,
+      strictness: user.strictness,
+    };
+  }
+
+  async getScreenTimeSummary(clerkId: string) {
+    const user = await this.getUser(clerkId);
+
+    const today = new Date();
+    const todayStr = today.toISOString().split('T')[0];
+
+    const lastUsage = await this.usageRepo.findOne({
+      where: {
+        user_id: user.id,
+        usage_date: todayStr,
+      },
+      order: { created_at: 'DESC' },
+    });
+
+    const usedSeconds = lastUsage?.total_usage_seconds ?? 0;
+    const dailyLimitSeconds = user.daily_limit_seconds ?? 0;
+
+    const remainingSeconds =
+      dailyLimitSeconds > 0 && usedSeconds < dailyLimitSeconds
+        ? dailyLimitSeconds - usedSeconds
+        : 0;
+
+    const usedPercent =
+      dailyLimitSeconds > 0
+        ? Math.min(100, Math.round((usedSeconds / dailyLimitSeconds) * 100))
+        : 0;
+
+    let warningLevel: 'none' | 'warning' | 'critical' = 'none';
+    if (dailyLimitSeconds > 0) {
+      if (usedPercent >= 100) {
+        warningLevel = 'critical';
+      } else if (usedPercent >= 80) {
+        warningLevel = 'warning';
+      }
+    }
+
+    return {
+      usageDate: todayStr,
+      dailyLimitSeconds,
+      strictness: user.strictness,
+      usedSeconds,
+      remainingSeconds,
+      usedPercent,
+      warningLevel,
+    };
+  }
+
   async recordUsage(clerkId: string, data: any) {
     const user = await this.getUser(clerkId);
     const metric = this.usageRepo.create({
