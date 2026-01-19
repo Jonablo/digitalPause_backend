@@ -86,6 +86,53 @@ export class MetricsService {
     };
   }
 
+  async getEmotionSummary(clerkId: string) {
+    const user = await this.getUser(clerkId);
+
+    const lastEmotion = await this.emotionalRepo.findOne({
+      where: { user_id: user.id },
+      order: { record_date: 'DESC', created_at: 'DESC' },
+    });
+
+    if (!lastEmotion) {
+      return {
+        level: 'low',
+        label: 'Sin datos',
+        emotion: null,
+        confidence: 0,
+        recordDate: null,
+      };
+    }
+
+    const emotionLower = lastEmotion.emotion.toLowerCase();
+
+    let level: 'low' | 'medium' | 'high' = 'low';
+
+    if (
+      emotionLower === 'stress' ||
+      emotionLower === 'frustration' ||
+      emotionLower === 'anxiety' ||
+      emotionLower === 'anger'
+    ) {
+      level = 'high';
+    } else if (emotionLower === 'sadness' || emotionLower === 'worry') {
+      level = 'medium';
+    } else {
+      level = 'low';
+    }
+
+    const label =
+      level === 'high' ? 'Alto' : level === 'medium' ? 'Medio' : 'Bajo';
+
+    return {
+      level,
+      label,
+      emotion: lastEmotion.emotion,
+      confidence: lastEmotion.confidence,
+      recordDate: lastEmotion.record_date,
+    };
+  }
+
   async recordUsage(clerkId: string, data: any) {
     const user = await this.getUser(clerkId);
     const metric = this.usageRepo.create({
@@ -134,7 +181,7 @@ export class MetricsService {
     const metric = this.emotionalRepo.create({
       user,
       user_id: user.id,
-      record_date: new Date().toISOString().split('T')[0], // Default to today
+      record_date: new Date().toISOString().split('T')[0],
       emotion: data.emotion,
       confidence: data.confidence,
     });

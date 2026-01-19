@@ -7,6 +7,7 @@ import { UsersModule } from './modules/users/users.module';
 import { MetricsModule } from './modules/metrics/metrics.module';
 import { InsightsModule } from './modules/insights/insights.module';
 import { RecommendationsModule } from './modules/recommendations/recommendations.module';
+import { AiModule } from './modules/ai/ai.module';
 
 @Module({
   imports: [
@@ -16,6 +17,7 @@ import { RecommendationsModule } from './modules/recommendations/recommendations
     MetricsModule,
     InsightsModule,
     RecommendationsModule,
+    AiModule,
   ],
   controllers: [AppController],
   providers: [AppService],
