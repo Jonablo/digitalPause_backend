@@ -4,6 +4,7 @@ import { UsageMetric } from './entities/usage-metric.entity';
 import { InteractionMetric } from './entities/interaction-metric.entity';
 import { EmotionalMetric } from './entities/emotional-metric.entity';
 import { User } from '../users/entities/user.entity';
+import { Settings } from '../users/entities/settings.entity';
 import { MetricsController } from './metrics.controller';
 import { EmotionsController } from './emotions.controller';
 import { MetricsService } from './metrics.service';
@@ -16,6 +17,7 @@ import { InsightsModule } from '../insights/insights.module';
       InteractionMetric,
       EmotionalMetric,
       User,
+      Settings,
     ]),
     InsightsModule,
   ],

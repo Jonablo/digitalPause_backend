@@ -5,6 +5,7 @@ import { UsageMetric } from './entities/usage-metric.entity';
 import { InteractionMetric } from './entities/interaction-metric.entity';
 import { EmotionalMetric } from './entities/emotional-metric.entity';
 import { User } from '../users/entities/user.entity';
+import { Settings } from '../users/entities/settings.entity';
 import { InsightsService } from '../insights/insights.service';
 
 @Injectable()
@@ -18,6 +19,8 @@ export class MetricsService {
     private emotionalRepo: Repository<EmotionalMetric>,
     @InjectRepository(User)
     private userRepo: Repository<User>,
+    @InjectRepository(Settings)
+    private settingsRepo: Repository<Settings>,
     private insightsService: InsightsService,
   ) {}
 
@@ -27,20 +30,33 @@ export class MetricsService {
     return user;
   }
 
+  private async getSettings(user: User): Promise<Settings> {
+    let settings = await this.settingsRepo.findOne({ where: { user: { id: user.id } } });
+    if (!settings) {
+      settings = this.settingsRepo.create({ user: user });
+      await this.settingsRepo.save(settings);
+    }
+    return settings;
+  }
+
   async updateScreenTimeLimit(clerkId: string, data: { dailyLimitSeconds: number; strictness?: string }) {
     const user = await this.getUser(clerkId);
-    user.daily_limit_seconds = data.dailyLimitSeconds;
-    user.strictness = data.strictness || null;
-    await this.userRepo.save(user);
+    const settings = await this.getSettings(user);
+    
+    settings.max_daily_minutes = Math.floor(data.dailyLimitSeconds / 60);
+    settings.strictness = data.strictness || settings.strictness || 'strict';
+    
+    await this.settingsRepo.save(settings);
 
     return {
-      dailyLimitSeconds: user.daily_limit_seconds,
-      strictness: user.strictness,
+      dailyLimitSeconds: settings.max_daily_minutes * 60,
+      strictness: settings.strictness,
     };
   }
 
   async getScreenTimeSummary(clerkId: string) {
     const user = await this.getUser(clerkId);
+    const settings = await this.getSettings(user);
 
     const today = new Date();
     const todayStr = today.toISOString().split('T')[0];
@@ -54,7 +70,8 @@ export class MetricsService {
     });
 
     const usedSeconds = lastUsage?.total_usage_seconds ?? 0;
-    const dailyLimitSeconds = user.daily_limit_seconds ?? 0;
+    // Use settings for limit
+    const dailyLimitSeconds = (settings.max_daily_minutes || 0) * 60;
 
     const remainingSeconds =
       dailyLimitSeconds > 0 && usedSeconds < dailyLimitSeconds
@@ -78,7 +95,7 @@ export class MetricsService {
     return {
       usageDate: todayStr,
       dailyLimitSeconds,
-      strictness: user.strictness,
+      strictness: settings.strictness,
       usedSeconds,
       remainingSeconds,
       usedPercent,

@@ -2,6 +2,7 @@ import { Module } from '@nestjs/common';
 import { TypeOrmModule } from '@nestjs/typeorm';
 import { ConfigModule, ConfigService } from '@nestjs/config';
 import { User } from '../modules/users/entities/user.entity';
+import { Settings } from '../modules/users/entities/settings.entity';
 import { UsageMetric } from '../modules/metrics/entities/usage-metric.entity';
 import { InteractionMetric } from '../modules/metrics/entities/interaction-metric.entity';
 import { EmotionalMetric } from '../modules/metrics/entities/emotional-metric.entity';
@@ -22,6 +23,7 @@ import { WellnessRecommendation } from '../modules/recommendations/entities/reco
         database: configService.get<string>('DB_NAME', 'digital_pause'),
         entities: [
           User,
+          Settings,
           UsageMetric,
           InteractionMetric,
           EmotionalMetric,
