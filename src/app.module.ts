@@ -8,6 +8,7 @@ import { MetricsModule } from './modules/metrics/metrics.module';
 import { InsightsModule } from './modules/insights/insights.module';
 import { RecommendationsModule } from './modules/recommendations/recommendations.module';
 import { AiModule } from './modules/ai/ai.module';
+import { ProgramsModule } from './modules/programs/programs.module';
 
 @Module({
   imports: [
@@ -18,6 +19,7 @@ import { AiModule } from './modules/ai/ai.module';
     InsightsModule,
     RecommendationsModule,
     AiModule,
+    ProgramsModule,
   ],
   controllers: [AppController],
   providers: [AppService],
