@@ -7,6 +7,7 @@ import { InteractionMetric } from '../modules/metrics/entities/interaction-metri
 import { EmotionalMetric } from '../modules/metrics/entities/emotional-metric.entity';
 import { Insight } from '../modules/insights/entities/insight.entity';
 import { WellnessRecommendation } from '../modules/recommendations/entities/recommendation.entity';
+import { Program } from '../modules/programs/entities/program.entity';
 
 @Module({
   imports: [
@@ -18,7 +19,7 @@ import { WellnessRecommendation } from '../modules/recommendations/entities/reco
         host: configService.get<string>('DB_HOST', 'localhost'),
         port: configService.get<number>('DB_PORT', 5432),
         username: configService.get<string>('DB_USER', 'postgres'),
-        password: configService.get<string>('DB_PASS', 'postgres'),
+        password: configService.get<string>('DB_PASS', 'postgres843228'),
         database: configService.get<string>('DB_NAME', 'digital_pause'),
         entities: [
           User,
@@ -27,6 +28,7 @@ import { WellnessRecommendation } from '../modules/recommendations/entities/reco
           EmotionalMetric,
           Insight,
           WellnessRecommendation,
+          Program,
         ],
         synchronize: true, // Only for development
       }),
