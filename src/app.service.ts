@@ -10,9 +10,11 @@ export class AppService {
       // Adjust 'python' to 'python3' if on linux/mac, but windows is usually 'python'
       const pythonProcess = spawn('python', [scriptPath, text]);
 
+      
       let dataString = '';
       let errorString = '';
 
+      
       pythonProcess.stdout.on('data', (data) => {
         dataString += data.toString();
       });
