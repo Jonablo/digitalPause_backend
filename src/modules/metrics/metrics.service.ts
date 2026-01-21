@@ -232,4 +232,46 @@ export class MetricsService {
 
     return metrics;
   }
+
+  async getBlockingRisk(clerkId: string) {
+    const user = await this.getUser(clerkId);
+
+    // Screen time component
+    const screen = await this.getScreenTimeSummary(clerkId);
+    const baselineSeconds = 4 * 3600; // 4h baseline if no limit configured
+    const screenRisk = screen.dailyLimitSeconds > 0
+      ? screen.usedPercent
+      : Math.min(100, Math.round((screen.usedSeconds / baselineSeconds) * 100));
+
+    // Interaction component (today)
+    const todayStr = new Date().toISOString().split('T')[0];
+    const lastInteraction = await this.interactionRepo.findOne({
+      where: { user_id: user.id, record_date: todayStr },
+      order: { created_at: 'DESC' },
+    });
+    const totalInteractions = (lastInteraction?.taps_count || 0) + (lastInteraction?.scroll_events || 0);
+    let interactionRisk = 0;
+    if (totalInteractions >= 1700) interactionRisk = 100;
+    else if (totalInteractions >= 1200) interactionRisk = 85;
+    else if (totalInteractions >= 800) interactionRisk = 60;
+    else interactionRisk = Math.round(Math.min(40, (totalInteractions / 800) * 40));
+
+    // Emotion component (last record)
+    const emotion = await this.getEmotionSummary(clerkId);
+    const emotionRisk = emotion.level === 'high' ? 90 : emotion.level === 'medium' ? 60 : 20;
+
+    // Weighted composite risk
+    const percent = Math.min(100, Math.round(0.5 * screenRisk + 0.3 * interactionRisk + 0.2 * emotionRisk));
+    const level: 'low' | 'medium' | 'high' | 'critical' =
+      percent >= 90 ? 'critical' : percent >= 70 ? 'high' : percent >= 40 ? 'medium' : 'low';
+
+    return {
+      percent,
+      level,
+      usedPercent: screen.usedPercent,
+      totalInteractions,
+      emotionLevel: emotion.level,
+      usageDate: screen.usageDate,
+    };
+  }
 }
