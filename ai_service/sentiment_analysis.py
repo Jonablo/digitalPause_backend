@@ -11,9 +11,8 @@ warnings.filterwarnings("ignore")
 def analyze_sentiment(text):
     model_name = "nlptown/bert-base-multilingual-uncased-sentiment"
     
-    # Load model and tokenizer
-    # Note: In a real production env, this should be a loaded once (service), 
-    # not re-loaded on every script call. For now, this suffices for the requirement.
+    # Model selected for multilingual sentiment analysis (1-5 stars)
+    # Suitable for short user-generated text in different languages.
     tokenizer = AutoTokenizer.from_pretrained(model_name)
     model = AutoModelForSequenceClassification.from_pretrained(model_name)
 
@@ -26,7 +25,7 @@ def analyze_sentiment(text):
     probabilities = F.softmax(logits, dim=1)
     prediction = torch.argmax(probabilities, dim=1).item()
     
-    # 0-4 -> 1-5 stars
+    # Convert model output range (0-4) to human-redeable scale (1-5 starts)
     stars = prediction + 1
     confidence = probabilities[0][prediction].item()
     
