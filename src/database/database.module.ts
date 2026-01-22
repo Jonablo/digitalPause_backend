@@ -37,11 +37,7 @@ import { Program } from '../modules/programs/entities/program.entity';
           ],
           synchronize: !isProduction,
           logging: configService.get<string>('LOG_LEVEL') === 'debug',
-          ...(isProduction && {
-            ssl: {
-              rejectUnauthorized: false,
-            },
-          }),
+          ssl: useSSL ? { rejectUnauthorized: false } : false,
         };
       },
     }),
