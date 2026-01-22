@@ -17,6 +17,8 @@ import { Program } from '../modules/programs/entities/program.entity';
       useFactory: (configService: ConfigService) => {
         const isProduction = configService.get<string>('NODE_ENV') === 'production';
         
+        const useSSL = configService.get<string>('DB_SSL', 'false') === 'true';
+        
         return {
           type: 'postgres',
           host: configService.get<string>('DB_HOST'),
@@ -24,7 +26,6 @@ import { Program } from '../modules/programs/entities/program.entity';
           username: configService.get<string>('DB_USER'),
           password: configService.get<string>('DB_PASS'),
           database: configService.get<string>('DB_NAME'),
-          ssl: false,
           entities: [
             User,
             UsageMetric,

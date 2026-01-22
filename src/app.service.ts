@@ -10,12 +10,14 @@ export class AppService {
   async analyzeSentiment(text: string): Promise<any> {
     return new Promise((resolve, reject) => {
       const scriptPath = path.join(process.cwd(), 'ai_service', 'sentiment_analysis.py');
-      
+
       // Obtener el ejecutable de Python desde .env
       // Por defecto 'python', pero en Linux/Mac puede ser 'python3'
       const pythonExecutable = this.configService.get<string>('PYTHON_EXECUTABLE', 'python');
-      
-      const pythonProcess = spawn(pythonExecutable, [scriptPath, text]);
+
+      const pythonProcess = spawn(pythonExecutable, [scriptPath, text], {
+        shell: false
+      });
 
       let dataString = '';
       let errorString = '';
@@ -33,7 +35,7 @@ export class AppService {
           console.error(`Python script error: ${errorString}`);
           return reject(new InternalServerErrorException('Failed to analyze sentiment'));
         }
-        
+
         try {
           const result = JSON.parse(dataString);
           resolve(result);
