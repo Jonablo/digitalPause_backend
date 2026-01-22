@@ -8,6 +8,7 @@ pnpm-debug.log*
 # Environment Variables
 .env
 .env.*
+.env.*.local
 !.env.example
 
 # Python / AI Service

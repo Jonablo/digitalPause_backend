@@ -14,24 +14,35 @@ import { Program } from '../modules/programs/entities/program.entity';
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST', 'localhost'),
-        port: configService.get<number>('DB_PORT', 5432),
-        username: configService.get<string>('DB_USER', 'postgres'),
-        password: configService.get<string>('DB_PASS', 'postgres843228'),
-        database: configService.get<string>('DB_NAME', 'digital_pause'),
-        entities: [
-          User,
-          UsageMetric,
-          InteractionMetric,
-          EmotionalMetric,
-          Insight,
-          WellnessRecommendation,
-          Program,
-        ],
-        synchronize: true, // Only for development
-      }),
+      useFactory: (configService: ConfigService) => {
+        const isProduction = configService.get<string>('NODE_ENV') === 'production';
+        
+        return {
+          type: 'postgres',
+          host: configService.get<string>('DB_HOST'),
+          port: configService.get<number>('DB_PORT'),
+          username: configService.get<string>('DB_USER'),
+          password: configService.get<string>('DB_PASS'),
+          database: configService.get<string>('DB_NAME'),
+          ssl: false,
+          entities: [
+            User,
+            UsageMetric,
+            InteractionMetric,
+            EmotionalMetric,
+            Insight,
+            WellnessRecommendation,
+            Program,
+          ],
+          synchronize: !isProduction,
+          logging: configService.get<string>('LOG_LEVEL') === 'debug',
+          ...(isProduction && {
+            ssl: {
+              rejectUnauthorized: false,
+            },
+          }),
+        };
+      },
     }),
   ],
 })
