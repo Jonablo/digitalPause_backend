@@ -1,71 +1,176 @@
 # DigitalPause Backend (Single-User Wellness)
 
-Backend for the Digital Wellbeing platform, designed with a modular architecture focused on **personal awareness, self-regulation, and privacy**.
+Backend for the **DigitalPause** Digital Wellbeing platform, designed with a **modular, privacy-first architecture** focused on **personal awareness, self-regulation, and mental wellness**.
 
 > **"The focus is on awareness and wellness, not coercion or remote control."**
 
-## System Architecture
+---
 
-The system uses **NestJS** as the main backend, connected to a **PostgreSQL** database for persisting metrics and insights. The Android client (Kotlin) is responsible for local monitoring and displaying notifications.
+## 🧱 System Architecture
 
-### Core Concepts
+The backend is built with **NestJS (Node.js + TypeScript)** and connects to a **PostgreSQL** database for persisting metrics, insights, and recommendations.
 
-1.  **Single-User Model**: The application is personal. There are no Parent/Child roles.
-2.  **Metrics-Driven**: The backend receives raw data (usage time, interactions, emotions) and processes it.
-3.  **Insights & Recommendations**: The system analyzes patterns (e.g., night usage, doomscrolling) and suggests content to improve wellbeing.
+The system is designed to be **container-ready** and **cloud-deployable**, supporting local development, CI/CD pipelines, and production environments such as **Azure**.
 
-### Privacy & Security
+### High-Level Components
 
--   **Identity Only**: Authentication via Clerk (JWT). No passwords stored locally.
--   **No Spyware**: No keylogging, no screen recording, no reading of private messages.
--   **Emotional Privacy**: Only emotional categories (e.g., "frustration") are stored, never the context or content that caused them.
+* **NestJS API** — Core backend logic and REST endpoints
+* **PostgreSQL** — Persistent storage for metrics and insights
+* **Docker** — Production-ready containerization
+* **Swagger (OpenAPI)** — API documentation
+* **Android Client (Kotlin)** — Local data collection and visualization (external)
 
-## Key API Endpoints
+---
 
-Global Prefix: `/api`
+## 🧠 Core Concepts
 
-### Auth
+1. **Single-User Model**
+   The application is personal and individual. There are **no Parent/Child roles**, remote control features, or surveillance behavior.
 
-*   `POST /users/bootstrap`: Initializes the user in the database after Clerk login.
+2. **Metrics-Driven Intelligence**
+   The backend receives raw behavioral data (usage time, interactions, emotions) and processes it into meaningful insights.
+
+3. **Insights & Recommendations**
+   The system identifies behavioral patterns (e.g., excessive night usage, doomscrolling) and generates **contextual recommendations** to promote healthier habits.
+
+---
+
+## 🔐 Privacy & Security Principles
+
+* **Identity Only**: Authentication via **Clerk (JWT)**. No passwords are stored locally.
+* **No Spyware**: No keylogging, no screen recording, no access to private messages.
+* **Emotional Privacy**: Only **emotion categories** (e.g., *frustration*, *calm*) are stored — never raw context or content.
+* **Environment-Based Configuration**: All secrets and credentials are injected via environment variables.
+
+---
+
+## 🔗 Key API Endpoints
+
+**Global Prefix:** `/api`
+
+### Authentication
+
+* `POST /users/bootstrap`
+  Initializes the user in the database after a successful Clerk login.
 
 ### Metrics Collection
 
-*   `POST /metrics/usage`: Submit daily screen time, session counts, and night usage flags.
-*   `POST /metrics/interactions`: Submit taps, scroll events, and speed.
-*   `POST /emotions`: Log an emotional state (e.g., "anxiety", "calm").
+* `POST /metrics/usage` — Daily screen time, sessions, and night usage flags
+* `POST /metrics/interactions` — Taps, scrolls, and interaction speed
+* `POST /emotions` — Log an emotional state (e.g., *anxiety*, *calm*)
 
 ### Intelligence
 
-*   `GET /insights`: Retrieve generated insights (e.g., "You've been scrolling for 2 hours straight").
-*   `GET /recommendations`: Get contextual wellness content (articles, videos) based on your recent patterns.
+* `GET /insights` — Retrieve generated behavioral insights
+* `GET /recommendations` — Get contextual wellness recommendations
 
-## Setup & Running
+---
+
+## ⚙️ Setup & Running
 
 ### Prerequisites
 
-*   Node.js v18+
-*   Docker (for PostgreSQL)
+* **Node.js v18+** (for local development)
+* **Docker** (required for PostgreSQL and production-like runs)
 
-### 1. Database
+---
 
-Start PostgreSQL using Docker:
+## 🧪 Local Development (Without Docker)
+
+### 1. Install Dependencies
+
+```bash
+npm install
+```
+
+### 2. Start PostgreSQL (Docker)
 
 ```bash
 docker-compose up -d
 ```
 
-### 2. Backend (NestJS)
+### 3. Start the Backend
 
 ```bash
-# Install dependencies
-npm install
-
-# Start development server
 npm run start:dev
 ```
 
-## Documentation (Swagger)
+The API will be available at:
+
+```
+http://localhost:3000/api
+```
+
+---
+
+## 🐳 Docker (Production-Ready)
+
+The backend includes a **multi-stage, optimized Dockerfile** suitable for local testing, CI/CD, and cloud deployment.
+
+This section documents **how to run the existing backend using Docker**, without changing the configuration model or embedding secrets into the image.
+
+### Build the Image
+
+```bash
+docker build -t digital-pause-backend:local .
+```
+
+### Run the Container (Local DB Example)
+
+> ⚠️ **Important**: The following values are **example placeholders only**.
+> They are **not** the real values from `.env` and must be replaced with your own local or cloud configuration.
+
+```bash
+docker run --rm -p 3000:3000 \
+  -e NODE_ENV=production \
+  -e PORT=3000 \
+  -e DB_HOST=your-db-host \
+  -e DB_PORT=5432 \
+  -e DB_USER=your_db_user \
+  -e DB_PASS=your_db_password \
+  -e DB_NAME=your_db_name \
+  -e DB_SSL=false \
+  digital-pause-backend:local
+```
+
+In real production environments (e.g., **Azure**), these variables are injected via **App Settings** or **Container Environment Variables**, not via the command line.
+
+---
+
+## ☁️ Cloud & CI/CD Readiness
+
+* Designed for **GitHub Actions** pipelines
+* Compatible with **Azure Container Registry (ACR)**
+* Ready for deployment to:
+
+  * Azure App Service (Containers)
+  * Azure Container Apps
+  * Kubernetes (AKS)
+
+Configuration is **fully environment-driven**, following 12‑factor app principles.
+
+---
+
+## 📘 API Documentation (Swagger)
 
 Once the server is running, visit:
-**`http://localhost:3000/api`**
-To view the interactive documentation for all endpoints.
+
+```
+http://localhost:3000/api
+```
+
+to explore the interactive API documentation.
+
+---
+
+## ✅ Project Status
+
+* ✔ Modular NestJS architecture
+* ✔ PostgreSQL integration (SSL-aware)
+* ✔ Production-grade Docker image
+* ✔ Privacy-first design
+* ✔ Ready for CI/CD and Azure deployment
+
+---
+
+This backend is designed to be **transparent, ethical, and user-centric**, supporting digital wellbeing without surveillance or coercion.
