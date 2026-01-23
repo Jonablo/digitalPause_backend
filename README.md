@@ -1,52 +1,57 @@
 # DigitalPause Backend
 
-A robust, modular backend for the Digital Wellbeing platform, designed to promote personal awareness and self-regulation without invasive monitoring. This system processes user metrics, analyzes behavioral patterns using AI, and provides personalized wellness recommendations.
+Backend for the **DigitalPause** Digital Wellbeing platform, designed with a **modular, privacy-first architecture** focused on **personal awareness, self-regulation, and mental wellness**.
 
 ## 🚀 Overview
 
-**DigitalPause** focuses on the "Single-User Model," prioritizing privacy and user empowerment over parental control or surveillance. The backend serves as the central intelligence hub, handling data ingestion, emotional analysis, and insight generation.
+---
 
-### Key Features
--   **Privacy-First Architecture**: No storage of private messages, keystrokes, or screen recordings.
--   **Metric Aggregation**: Efficiently stores screen time, interaction patterns (scroll speed, taps), and emotional logs.
--   **AI-Powered Analysis**: Uses a dedicated Python microservice for sentiment analysis and pattern recognition.
--   **Contextual Insights**: Generates actionable feedback (e.g., detecting "doomscrolling" or high fatigue) based on aggregated data.
+## 🧱 System Architecture
 
-## 🛠 Tech Stack
+The backend is built with **NestJS (Node.js + TypeScript)** and connects to a **PostgreSQL** database for persisting metrics, insights, and recommendations.
 
--   **Framework**: [NestJS](https://nestjs.com/) (Node.js)
--   **Database**: PostgreSQL (via TypeORM)
--   **AI Service**: Python (Sentiment Analysis Script)
--   **Authentication**: Clerk (JWT based)
--   **Containerization**: Docker & Docker Compose
+The system is designed to be **container-ready** and **cloud-deployable**, supporting local development, CI/CD pipelines, and production environments such as **Azure**.
 
-## 📡 API Endpoints Documentation
+### High-Level Components
 
-The API is prefixed with `/api` (configured in `main.ts`, assumed standard). Below is a detailed breakdown of available endpoints.
+* **NestJS API** — Core backend logic and REST endpoints
+* **PostgreSQL** — Persistent storage for metrics and insights
+* **Docker** — Production-ready containerization
+* **Swagger (OpenAPI)** — API documentation
+* **Android Client (Kotlin)** — Local data collection and visualization (external)
 
-### 👤 Authentication & Users
+---
 
-#### `POST /users/bootstrap`
-Initializes or retrieves a user's state in the database upon login.
--   **Query/Body**: `clerkId`, `email`
--   **Description**: Ensures the user exists in the local PostgreSQL database, linking their Clerk identity to internal records.
+## 🧠 Core Concepts
 
-### 📊 Metrics Collection
+1. **Single-User Model**
+   The application is personal and individual. There are **no Parent/Child roles**, remote control features, or surveillance behavior.
 
-#### `POST /metrics/usage`
-Uploads daily usage statistics.
--   **Query**: `clerkId`
--   **Body**:
-    ```json
-    {
-      "usageDate": "2024-03-20",
-      "totalUsageSeconds": 14400,
-      "sessionsCount": 18,
-      "longestSessionSeconds": 3600,
-      "nightUsage": false
-    }
-    ```
--   **Description**: Logs total screen time and session details to track digital habits over time.
+2. **Metrics-Driven Intelligence**
+   The backend receives raw behavioral data (usage time, interactions, emotions) and processes it into meaningful insights.
+
+3. **Insights & Recommendations**
+   The system identifies behavioral patterns (e.g., excessive night usage, doomscrolling) and generates **contextual recommendations** to promote healthier habits.
+
+---
+
+## 🔐 Privacy & Security Principles
+
+* **Identity Only**: Authentication via **Clerk (JWT)**. No passwords are stored locally.
+* **No Spyware**: No keylogging, no screen recording, no access to private messages.
+* **Emotional Privacy**: Only **emotion categories** (e.g., *frustration*, *calm*) are stored — never raw context or content.
+* **Environment-Based Configuration**: All secrets and credentials are injected via environment variables.
+
+---
+
+## 🔗 Key API Endpoints
+
+**Global Prefix:** `/api`
+
+### Authentication
+
+* `POST /users/bootstrap`
+  Initializes the user in the database after a successful Clerk login.
 
 #### `POST /metrics/interactions`
 Uploads physical interaction data.
@@ -62,43 +67,16 @@ Uploads physical interaction data.
     ```
 -   **Description**: Tracks physical engagement intensity. High scroll speeds or excessive taps can indicate anxiety or "doomscrolling."
 
-#### `POST /emotions`
-Logs a user's self-reported or detected emotional state.
--   **Query**: `clerkId`
--   **Body**:
-    ```json
-    {
-      "emotion": "anxiety",
-      "confidence": 0.85
-    }
-    ```
--   **Description**: Stores emotional data to correlate mood with digital usage patterns.
+* `POST /metrics/usage` — Daily screen time, sessions, and night usage flags
+* `POST /metrics/interactions` — Taps, scrolls, and interaction speed
+* `POST /emotions` — Log an emotional state (e.g., *anxiety*, *calm*)
 
 ### 🧠 Intelligence & Insights
 
-#### `GET /insights`
-Retrieves generated insights for the user.
--   **Query**: `clerkId`
--   **Response**: List of insights (e.g., "High Fatigue Detected", "Night Usage Alert").
--   **Description**: Returns the latest behavioral analysis results to be displayed in the mobile app.
+* `GET /insights` — Retrieve generated behavioral insights
+* `GET /recommendations` — Get contextual wellness recommendations
 
-#### `POST /insights/generate`
-Triggers the insight generation engine.
--   **Query**: `clerkId`
--   **Description**: Manually forces the backend to analyze recent metrics (usage, interactions, emotions) and generate new insights. Useful for testing or on-demand analysis.
-
-#### `GET /analyze`
-Direct access to the Python Sentiment Analysis service.
--   **Query**: `text` (The string to analyze)
--   **Response**: JSON containing sentiment score and magnitude.
--   **Description**: A utility endpoint that spawns a Python process to analyze text sentiment. Used internally but exposed for debugging.
-
-### 💡 Recommendations
-
-#### `GET /recommendations`
-Fetches personalized wellness content.
--   **Query**: `clerkId`
--   **Description**: Returns a curated list of articles, videos, or exercises (e.g., meditation guides) tailored to the user's current state (e.g., if "anxiety" is detected, it suggests calming content).
+---
 
 ## ⚙️ Setup & Running
 
@@ -107,20 +85,107 @@ Fetches personalized wellness content.
 -   Docker (for PostgreSQL)
 -   Python 3 (for AI service)
 
-### 1. Start Database
-```bash
-docker-compose up -d
-```
+* **Node.js v18+** (for local development)
+* **Docker** (required for PostgreSQL and production-like runs)
 
-### 2. Install Dependencies
+---
+
+## 🧪 Local Development (Without Docker)
+
+### 1. Install Dependencies
+
 ```bash
 npm install
 ```
 
-### 3. Run Development Server
+### 2. Start PostgreSQL (Docker)
+
+```bash
+docker-compose up -d
+```
+
+### 3. Start the Backend
+
 ```bash
 npm run start:dev
 ```
 
-### 4. Swagger Documentation
-Once running, visit **`http://localhost:3000/api`** to explore the interactive API documentation.
+The API will be available at:
+
+```
+http://localhost:3000/api
+```
+
+---
+
+## 🐳 Docker (Production-Ready)
+
+The backend includes a **multi-stage, optimized Dockerfile** suitable for local testing, CI/CD, and cloud deployment.
+
+This section documents **how to run the existing backend using Docker**, without changing the configuration model or embedding secrets into the image.
+
+### Build the Image
+
+```bash
+docker build -t digital-pause-backend:local .
+```
+
+### Run the Container (Local DB Example)
+
+> ⚠️ **Important**: The following values are **example placeholders only**.
+> They are **not** the real values from `.env` and must be replaced with your own local or cloud configuration.
+
+```bash
+docker run --rm -p 3000:3000 \
+  -e NODE_ENV=production \
+  -e PORT=3000 \
+  -e DB_HOST=your-db-host \
+  -e DB_PORT=5432 \
+  -e DB_USER=your_db_user \
+  -e DB_PASS=your_db_password \
+  -e DB_NAME=your_db_name \
+  -e DB_SSL=false \
+  digital-pause-backend:local
+```
+
+In real production environments (e.g., **Azure**), these variables are injected via **App Settings** or **Container Environment Variables**, not via the command line.
+
+---
+
+## ☁️ Cloud & CI/CD Readiness
+
+* Designed for **GitHub Actions** pipelines
+* Compatible with **Azure Container Registry (ACR)**
+* Ready for deployment to:
+
+  * Azure App Service (Containers)
+  * Azure Container Apps
+  * Kubernetes (AKS)
+
+Configuration is **fully environment-driven**, following 12‑factor app principles.
+
+---
+
+## 📘 API Documentation (Swagger)
+
+Once the server is running, visit:
+
+```
+http://localhost:3000/api
+```
+
+to explore the interactive API documentation.
+
+---
+
+## ✅ Project Status
+
+* ✔ Modular NestJS architecture
+* ✔ PostgreSQL integration (SSL-aware)
+* ✔ Production-grade Docker image
+* ✔ Privacy-first design
+* ✔ Ready for CI/CD and Azure deployment
+
+---
+
+This backend is designed to be **transparent, ethical, and user-centric**, supporting digital wellbeing without surveillance or coercion.

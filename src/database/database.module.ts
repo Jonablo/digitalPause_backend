@@ -8,30 +8,39 @@ import { InteractionMetric } from '../modules/metrics/entities/interaction-metri
 import { EmotionalMetric } from '../modules/metrics/entities/emotional-metric.entity';
 import { Insight } from '../modules/insights/entities/insight.entity';
 import { WellnessRecommendation } from '../modules/recommendations/entities/recommendation.entity';
+import { Program } from '../modules/programs/entities/program.entity';
 
 @Module({
   imports: [
     TypeOrmModule.forRootAsync({
       imports: [ConfigModule],
       inject: [ConfigService],
-      useFactory: (configService: ConfigService) => ({
-        type: 'postgres',
-        host: configService.get<string>('DB_HOST', 'localhost'),
-        port: configService.get<number>('DB_PORT', 5432),
-        username: configService.get<string>('DB_USER', 'postgres'),
-        password: configService.get<string>('DB_PASS', 'postgres'),
-        database: configService.get<string>('DB_NAME', 'digital_pause'),
-        entities: [
-          User,
-          Settings,
-          UsageMetric,
-          InteractionMetric,
-          EmotionalMetric,
-          Insight,
-          WellnessRecommendation,
-        ],
-        synchronize: true, // Only for development
-      }),
+      useFactory: (configService: ConfigService) => {
+        const isProduction = configService.get<string>('NODE_ENV') === 'production';
+        
+        const useSSL = configService.get<string>('DB_SSL', 'false') === 'true';
+        
+        return {
+          type: 'postgres',
+          host: configService.get<string>('DB_HOST'),
+          port: configService.get<number>('DB_PORT'),
+          username: configService.get<string>('DB_USER'),
+          password: configService.get<string>('DB_PASS'),
+          database: configService.get<string>('DB_NAME'),
+          entities: [
+            User,
+            UsageMetric,
+            InteractionMetric,
+            EmotionalMetric,
+            Insight,
+            WellnessRecommendation,
+            Program,
+          ],
+          synchronize: !isProduction,
+          logging: configService.get<string>('LOG_LEVEL') === 'debug',
+          ssl: useSSL ? { rejectUnauthorized: false } : false,
+        };
+      },
     }),
   ],
 })
