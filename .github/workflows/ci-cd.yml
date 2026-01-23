@@ -1,0 +1,23 @@
+name: CI/CD DigitalPause Backend (VM)
+
+on:
+  push:
+    branches: ["feat/add-programs-api"]
+  pull_request:
+    branches: ["feat/add-programs-api"]
+
+jobs:
+  qa:
+    name: Quality Control (ESLint + Jest)
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 18
+
+      - run: npm install
+      - run: npm run lint
+      - run: npm test -- --runInBand
