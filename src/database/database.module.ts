@@ -29,6 +29,7 @@ import { Program } from '../modules/programs/entities/program.entity';
           database: configService.get<string>('DB_NAME'),
           entities: [
             User,
+            Settings,
             UsageMetric,
             InteractionMetric,
             EmotionalMetric,
