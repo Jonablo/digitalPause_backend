@@ -2,9 +2,12 @@ import { Test, TestingModule } from '@nestjs/testing';
 import { INestApplication, ValidationPipe } from '@nestjs/common';
 import * as request from 'supertest';
 import { AppModule } from '../src/app.module';
+import { DataSource } from 'typeorm';
 
 describe('DigitalPause API (E2E)', () => {
   let app: INestApplication;
+  let dataSource: DataSource;
+
   const testClerkId = 'test_user_e2e';
   let createdProgramId: string;
 
@@ -16,11 +19,23 @@ describe('DigitalPause API (E2E)', () => {
     app = moduleFixture.createNestApplication();
     app.setGlobalPrefix('api');
     app.useGlobalPipes(new ValidationPipe({ transform: true }));
+
     await app.init();
+
+    // 👉 obtenemos el DataSource real de TypeORM
+    dataSource = app.get(DataSource);
   });
 
   afterAll(async () => {
-    await app.close();
+    // 👉 cerramos conexión a la DB
+    if (dataSource?.isInitialized) {
+      await dataSource.destroy();
+    }
+
+    // 👉 cerramos la app Nest
+    if (app) {
+      await app.close();
+    }
   });
 
   describe('Health Check', () => {
