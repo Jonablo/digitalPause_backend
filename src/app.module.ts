@@ -9,6 +9,7 @@ import { InsightsModule } from './modules/insights/insights.module';
 import { RecommendationsModule } from './modules/recommendations/recommendations.module';
 import { AiModule } from './modules/ai/ai.module';
 
+
 @Module({
   imports: [
     ConfigModule.forRoot({ isGlobal: true }),
