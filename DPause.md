@@ -1,6 +1,6 @@
-# BienestarDigital (Proyecto Completo)
+# MindPause (Proyecto Completo)
 
-Este repositorio contiene la solución integral "BienestarDigital" (también referida como `dpause` o `HambApp`), diseñada para monitorear, analizar y mejorar los hábitos digitales del usuario.
+Este repositorio contiene la solución integral "MindPause" (anteriormente conocida como `BienestarDigital`), diseñada para monitorear, analizar y mejorar los hábitos digitales del usuario.
 
 ## 🏗 Arquitectura del Sistema
 

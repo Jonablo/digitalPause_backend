@@ -48,6 +48,6 @@ export class AppService {
 
   getHello(): string {
     const env = this.configService.get<string>('NODE_ENV', 'development');
-    return `DigitalPause Backend is running! (${env})`;
+    return `MindPause Backend is running! (${env})`;
   }
 }

@@ -1,6 +1,6 @@
-# DigitalPause Backend
+# MindPause Backend
 
-Backend for the **DigitalPause** Digital Wellbeing platform, designed with a **modular, privacy-first architecture** focused on **personal awareness, self-regulation, and mental wellness**.
+Backend for the **MindPause** Digital Wellbeing platform, designed with a **modular, privacy-first architecture** focused on **personal awareness, self-regulation, and mental wellness**.
 
 ## 🚀 Overview
 

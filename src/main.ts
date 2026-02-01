@@ -26,8 +26,8 @@ async function bootstrap() {
 
   // Swagger Config
   const config = new DocumentBuilder()
-    .setTitle('DigitalPause API')
-    .setDescription('Backend API for Digital Wellbeing App')
+    .setTitle('MindPause API')
+    .setDescription('Backend API for MindPause App')
     .setVersion('1.0')
     .addBearerAuth()
     .build();
