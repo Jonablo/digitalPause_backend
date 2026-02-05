@@ -1,14 +1,23 @@
 import { Injectable, InternalServerErrorException } from '@nestjs/common';
+import { ConfigService } from '@nestjs/config';
 import { spawn } from 'child_process';
 import * as path from 'path';
 
 @Injectable()
 export class AppService {
+  constructor(private readonly configService: ConfigService) {}
+
   async analyzeSentiment(text: string): Promise<any> {
     return new Promise((resolve, reject) => {
       const scriptPath = path.join(process.cwd(), 'ai_service', 'sentiment_analysis.py');
-      // Adjust 'python' to 'python3' if on linux/mac, but windows is usually 'python'
-      const pythonProcess = spawn('python', [scriptPath, text]);
+
+      // Obtener el ejecutable de Python desde .env
+      // Por defecto 'python', pero en Linux/Mac puede ser 'python3'
+      const pythonExecutable = this.configService.get<string>('PYTHON_EXECUTABLE', 'python');
+
+      const pythonProcess = spawn(pythonExecutable, [scriptPath, text], {
+        shell: false
+      });
 
       
       let dataString = '';
@@ -28,7 +37,7 @@ export class AppService {
           console.error(`Python script error: ${errorString}`);
           return reject(new InternalServerErrorException('Failed to analyze sentiment'));
         }
-        
+
         try {
           const result = JSON.parse(dataString);
           resolve(result);
@@ -40,6 +49,7 @@ export class AppService {
   }
 
   getHello(): string {
-    return 'DigitalPause Backend is running!';
+    const env = this.configService.get<string>('NODE_ENV', 'development');
+    return `MindPause Backend is running! (${env})`;
   }
 }

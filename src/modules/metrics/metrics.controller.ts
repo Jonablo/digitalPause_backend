@@ -64,4 +64,12 @@ export class MetricsController {
     if (!clerkId) throw new BadRequestException('Clerk ID required');
     return this.metricsService.getScreenTimeSummary(clerkId);
   }
+
+  @Get('blocking-risk')
+  @ApiOperation({ summary: 'Get composite blocking risk percent for today' })
+  @ApiQuery({ name: 'clerkId', required: true })
+  async getBlockingRisk(@Query('clerkId') clerkId: string) {
+    if (!clerkId) throw new BadRequestException('Clerk ID required');
+    return this.metricsService.getBlockingRisk(clerkId);
+  }
 }
