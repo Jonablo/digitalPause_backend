@@ -1,8 +1,8 @@
-# MindPause Backend
+# DigitalPause Backend (Single-User Wellness)
 
-Backend for the **MindPause** Digital Wellbeing platform, designed with a **modular, privacy-first architecture** focused on **personal awareness, self-regulation, and mental wellness**.
+Backend for the **DigitalPause** Digital Wellbeing platform, designed with a **modular, privacy-first architecture** focused on **personal awareness, self-regulation, and mental wellness**.
 
-## 🚀 Overview
+> **"The focus is on awareness and wellness, not coercion or remote control."**
 
 ---
 
@@ -18,6 +18,7 @@ The system is designed to be **container-ready** and **cloud-deployable**, suppo
 * **PostgreSQL** — Persistent storage for metrics and insights
 * **Docker** — Production-ready containerization
 * **Swagger (OpenAPI)** — API documentation
+* **AI Service** — Python-based intelligent recommendation engine
 * **Android Client (Kotlin)** — Local data collection and visualization (external)
 
 ---
@@ -53,25 +54,13 @@ The system is designed to be **container-ready** and **cloud-deployable**, suppo
 * `POST /users/bootstrap`
   Initializes the user in the database after a successful Clerk login.
 
-#### `POST /metrics/interactions`
-Uploads physical interaction data.
--   **Query**: `clerkId`
--   **Body**:
-    ```json
-    {
-      "recordDate": "2024-03-20",
-      "tapsCount": 1200,
-      "scrollEvents": 350,
-      "avgScrollSpeed": 2.5
-    }
-    ```
--   **Description**: Tracks physical engagement intensity. High scroll speeds or excessive taps can indicate anxiety or "doomscrolling."
+### Metrics Collection
 
 * `POST /metrics/usage` — Daily screen time, sessions, and night usage flags
 * `POST /metrics/interactions` — Taps, scrolls, and interaction speed
 * `POST /emotions` — Log an emotional state (e.g., *anxiety*, *calm*)
 
-### 🧠 Intelligence & Insights
+### Intelligence
 
 * `GET /insights` — Retrieve generated behavioral insights
 * `GET /recommendations` — Get contextual wellness recommendations
@@ -81,9 +70,6 @@ Uploads physical interaction data.
 ## ⚙️ Setup & Running
 
 ### Prerequisites
--   Node.js v18+
--   Docker (for PostgreSQL)
--   Python 3 (for AI service)
 
 * **Node.js v18+** (for local development)
 * **Docker** (required for PostgreSQL and production-like runs)
@@ -152,17 +138,124 @@ In real production environments (e.g., **Azure**), these variables are injected 
 
 ---
 
-## ☁️ Cloud & CI/CD Readiness
+## 🚀 CI/CD Pipeline
 
-* Designed for **GitHub Actions** pipelines
-* Compatible with **Azure Container Registry (ACR)**
-* Ready for deployment to:
+The project implements a **fully automated CI/CD pipeline** using **GitHub Actions** for quality assurance, container building, and deployment to Azure infrastructure.
 
-  * Azure App Service (Containers)
-  * Azure Container Apps
-  * Kubernetes (AKS)
+### Pipeline Overview
 
-Configuration is **fully environment-driven**, following 12‑factor app principles.
+**Workflow File:** `.github/workflows/ci-cd.yml`
+
+The pipeline is triggered on:
+- Push events to the `feat/add-programs-api` branch
+- Pull requests targeting the `feat/add-programs-api` branch
+
+### Pipeline Stages
+
+#### 1️⃣ **QA — Automated Testing**
+- **Runtime:** Ubuntu Latest
+- **Node Version:** 18
+- **Test Framework:** Jest (End-to-End Tests)
+- **Features:**
+  - Dependency caching for faster builds (`npm` cache)
+  - Clean installation with `npm ci`
+  - Environment-based test configuration
+  - Silent logging for cleaner test output
+
+#### 2️⃣ **Build — Docker Image Creation**
+- **Depends on:** QA stage (only runs if tests pass)
+- **Registry:** Docker Hub
+- **Actions:**
+  - Authenticates with Docker Hub using secured credentials
+  - Builds production Docker image
+  - Tags image as `latest`
+  - Pushes to Docker Hub registry
+
+#### 3️⃣ **Deploy — Azure VM Deployment**
+- **Depends on:** Build stage
+- **Target:** Azure Virtual Machine
+- **Deployment Method:** SSH-based remote execution
+- **Actions:**
+  - Establishes secure SSH connection to Azure VM
+  - Installs Docker if not present
+  - Pulls latest Docker image from registry
+  - Stops and removes previous container
+  - Deploys new container with environment variables
+  - Cleans up unused Docker images
+
+### Required Secrets
+
+The pipeline requires the following GitHub Secrets to be configured:
+
+**Database Configuration:**
+- `DB_HOST` — PostgreSQL host address
+- `DB_PORT` — PostgreSQL port (default: 5432)
+- `DB_USER` — Database username
+- `DB_PASS` — Database password
+- `DB_NAME` — Database name
+- `DB_SSL` — SSL connection flag (true/false)
+
+**Docker Registry:**
+- `DOCKER_USERNAME` — Docker Hub username
+- `DOCKER_PASSWORD` — Docker Hub password/token
+
+**Azure VM Access:**
+- `VM_SSH_KEY` — Private SSH key for VM access
+- `VM_USER` — SSH username for VM
+- `VM_HOST` — VM IP address or hostname
+
+### Pipeline Features
+
+✅ **Automated Testing** — Every code change is validated with end-to-end tests  
+✅ **Dependency Caching** — Faster builds through intelligent npm cache management  
+✅ **Zero-Downtime Deployment** — Container replacement strategy ensures service continuity  
+✅ **Security-First** — All credentials managed through GitHub Secrets  
+✅ **Auto-Cleanup** — Removes unused Docker images to optimize VM storage  
+✅ **Idempotent Deployment** — Safe to re-run without side effects
+
+---
+
+## ☁️ Cloud & Deployment Architecture
+
+### Current Infrastructure
+
+* **Azure Virtual Machine** — Primary hosting environment
+* **Docker Hub** — Container registry for image storage
+* **GitHub Actions** — CI/CD orchestration
+* **PostgreSQL** — Managed database instance
+
+### Configuration Management
+
+Configuration is **fully environment-driven**, following **12-factor app principles**:
+- No hardcoded credentials in source code
+- All sensitive data injected via environment variables
+- Separate configurations for development, testing, and production
+
+### Deployment Flexibility
+
+The containerized architecture is compatible with multiple Azure deployment targets:
+- ✅ **Azure Virtual Machines** (current)
+- Azure App Service (Containers)
+- Azure Container Apps
+- Azure Kubernetes Service (AKS)
+
+---
+
+## 🧪 Testing
+
+### Running Tests Locally
+
+```bash
+# Run end-to-end tests
+npm run test:e2e
+```
+
+### Test Environment
+
+Tests run with:
+- `NODE_ENV=test`
+- Silent logging (`LOG_LEVEL=silent`)
+- Database credentials from environment variables
 
 ---
 
@@ -178,14 +271,49 @@ to explore the interactive API documentation.
 
 ---
 
+## 📁 Project Structure
+
+```
+digitalPause_backend/
+├── .github/
+│   └── workflows/
+│       └── ci-cd.yml          # CI/CD pipeline configuration
+├── ai_service/                # Python-based AI recommendation engine
+├── src/                       # NestJS application source code
+├── .dockerignore              # Docker build exclusions
+├── .gitignore                 # Git exclusions
+├── Dockerfile                 # Multi-stage production build
+├── docker-compose.yml         # Local PostgreSQL setup
+├── nest-cli.json              # NestJS CLI configuration
+├── package.json               # Node.js dependencies and scripts
+├── tsconfig.json              # TypeScript configuration
+└── README.md                  # This file
+```
+
+---
+
 ## ✅ Project Status
 
 * ✔ Modular NestJS architecture
 * ✔ PostgreSQL integration (SSL-aware)
 * ✔ Production-grade Docker image
+* ✔ Automated CI/CD pipeline with GitHub Actions
+* ✔ End-to-end testing with Jest
+* ✔ Automated deployment to Azure VM
+* ✔ Docker Hub integration
 * ✔ Privacy-first design
-* ✔ Ready for CI/CD and Azure deployment
+* ✔ Zero-downtime deployment strategy
 
 ---
 
-This backend is designed to be **transparent, ethical, and user-centric**, supporting digital wellbeing without surveillance or coercion.
+## 🤝 Contributing
+
+This project follows a structured development workflow:
+
+1. Create feature branches from `main`
+2. Push changes trigger automated tests
+3. Successful tests trigger Docker image build
+4. Successful builds trigger deployment to Azure VM
+5. Submit pull requests for code review
+
+---
