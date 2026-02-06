@@ -2,7 +2,7 @@
 
 Backend for the **DigitalPause** Digital Wellbeing platform, designed with a **modular, privacy-first architecture** focused on **personal awareness, self-regulation, and mental wellness**.
 
-> **"The focus is on awareness and wellness, not coercion or remote control."**
+> **"Si la tecnología domina y ordena tu vida eres su esclavo, si es una herramienta que no te aleja de las personas que amas, es tu aliada."**
 
 ---
 
@@ -289,9 +289,7 @@ digitalPause_backend/
 ├── tsconfig.json              # TypeScript configuration
 └── README.md                  # This file
 ```
-
 ---
-
 ## ✅ Project Status
 
 * ✔ Modular NestJS architecture
